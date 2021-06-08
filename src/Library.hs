@@ -32,9 +32,7 @@ data Guantelete = UnGuantelete{
 
 type Universo = [Personaje]
 
-
-{-
-    Punto 1: (2 puntos)
+{-Punto 1: (2 puntos)
 Modelar Personaje, Guantelete y Universo como tipos de dato e implementar el chasquido de un universo.
 -}
 
@@ -43,8 +41,6 @@ chasquidoDeUniverso universo = take (nuevoCantPoblacion universo) universo
 
 nuevoCantPoblacion :: Universo->Number
 nuevoCantPoblacion  =  (flip div 2 .length)
-
-
 
 -- DECLARANDO PERSONAJES
 
@@ -71,9 +67,7 @@ blackWidow = UnPersonaje {
     ,energia = 3
     ,planeta = "Tierra"
  } 
-
-{-
-Punto 2: (3 puntos) Resolver utilizando únicamente orden superior.
+{-Punto 2: (3 puntos) Resolver utilizando únicamente orden superior.
 Saber si un universo es apto para péndex, que ocurre si alguno de los personajes que lo integran 
 tienen menos de 45 años.
 Saber la energía total de un universo que es la sumatoria de todas las energías de sus
@@ -187,23 +181,44 @@ Punto 4: (1 punto) Dar un ejemplo de un guantelete de goma con las gemas tiempo,
 alma que quita la habilidad de “usar Mjolnir” y la gema loca que manipula el poder del alma 
 tratando de eliminar la “programación en Haskell”.
 -}
+-- Puntp 4 
 guanteleteDeGoma = UnGuantelete{
-   material = "guanteleteDeGoma"
+    material = "guanteleteDeGoma"
     ,gemas = [tiempo , alma "usar Mjolnir" ,gemaLoca (alma "programación en Haskell")]
 }
 
 
-{-
-Punto 5: (2 puntos). No se puede utilizar recursividad. Generar la función utilizar
+{- Punto 5: (2 puntos). No se puede utilizar recursividad.
+ Generar la función utilizar
   que dado una lista de gemas y un enemigo ejecuta el poder de cada una de las gemas que
-   lo componen contra el personaje dado. Indicar cómo se produce el “efecto de lado” sobre la víctima.
+   lo componen contra el personaje dado. Indicar cómo se produce el “efecto de lado” sobre la víctima.-}
+type Enemigo = Personaje
+
+utilizar :: [Gema]->Enemigo->Enemigo
+utilizar listaGemas enemigo = foldl aplicarPoder enemigo  listaGemas
+
+
+{-
+Punto 6: (2 puntos). Resolver utilizando recursividad. Definir la función gemaMasPoderosa 
+que dado un guantelete y una persona obtiene la gema del infinito que produce la pérdida más grande de
+ energía sobre la víctima. 
 -}
 
 
+gemaMasPoderosa :: Guantelete->Personaje->Gema
+gemaMasPoderosa aPersonaje = foldl1 (compararFuentesSegun  guantelete)
+
+
+--fuenteGanadora :: Ord a=> Persona->(Persona->a)->[Fuente]->Fuente
+--fuenteGanadora aPersonaje criterio  = foldl1 (compararFuentesSegun criterio aPersona)   --aplicacion parcial
+
+
+compararFuentesSegun :: Guantelete->Personaje->Gema
+compararFuentesSegun guantelete aPersonaje aGema bGema 
+   | energia (aplicarPoder aPersonaje aGema) < energia (aplicarPoder aPersonaje bGema) = aGema
+   | otherwise = bGema
 
 {-
-Punto 6: (2 puntos). Resolver utilizando recursividad. Definir la función gemaMasPoderosa que dado un guantelete y una persona obtiene la gema del infinito que produce la pérdida más grande de energía sobre la víctima. 
-
 
 Punto 7: (1 punto) Dada la función generadora de gemas y un guantelete de locos:
 infinitasGemas :: Gema -> [Gema]
