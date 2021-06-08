@@ -22,12 +22,12 @@ data Personaje = UnPersonaje{
     ,nombre :: String
     ,habilidades :: [String]
     ,energia :: Energia
-    ,planeta :: String
+    ,planeta :: Planeta
 } deriving (Show, Eq)
 
-data Guantelete = Guantelete{ 
+data Guantelete = UnGuantelete{ 
     material :: String
-    ,gemas ::[Gema]
+    ,gemas :: [Gema]
 } deriving (Show,Eq)
 
 type Universo = [Personaje]
@@ -96,10 +96,12 @@ energiaTotal :: Universo->Energia
 energiaTotal = sum.map energia.integrantesHabilidosos 
 
 integrantesHabilidosos :: Universo->Universo
-integrantesHabilidosos = filter esHabilidoso
+integrantesHabilidosos = filter (tieneMasDeNHabilidades 1)
 
-esHabilidoso :: Criterio
-esHabilidoso = (> 1).length.habilidades
+tieneMasDeNHabilidades :: Number->Criterio
+tieneMasDeNHabilidades n  =  (> n).(length.habilidades)  
+--esHabilidoso :: Criterio
+--esHabilidoso = (> 1).length.habilidades
 
 --Saber la energía total de un universo que es la sumatoria de todas las 
 --energías de sus integrantes que tienen más de una habilidad.
@@ -112,7 +114,8 @@ el poseedor puede utilizar el poder del mismo contra un enemigo,
 -}
 
 type Gema = Personaje->Personaje
-
+aplicarPoder :: Personaje->Gema->Personaje
+aplicarPoder aPersonaje gema = gema aPersonaje
 
 --La mente que tiene la habilidad de debilitar la energía de un usuario en un valor dado.
 mente ::Number->Gema
@@ -134,22 +137,84 @@ controlarAlma habilidad aPersonaje = aPersonaje {habilidades = eliminarHabilidad
 eliminarHabilidad :: String -> Personaje -> [String]
 eliminarHabilidad hab   = filter (/= hab) . habilidades  
 
--- c: EL espacio
-espacio :: Universo->Gema
-espacio 
+--El espacio que permite transportar al rival al planeta x (el que usted decida) y resta 20 puntos de energía.
+type Planeta = String
+
+espacio :: Planeta->Gema
+espacio  nuevoPlaneta   = debilitarEnergia 20 . transportarAPlaneta nuevoPlaneta      --SE ESTA APLICANDO PARCIALMENTE APERSONAJE
+ --(debilitarEnergia 20 . transportarAPlaneta nuevoPlaneta) aPersonaje == debilitarEnergia 20 . transportarAPlaneta nuevoPlaneta)
+
+transportarAPlaneta :: String->Personaje->Personaje
+transportarAPlaneta nuevoPlaneta aPersonaje = aPersonaje {planeta = nuevoPlaneta}
+
+--El poder deja sin energía al rival y si tiene 2 habilidades o menos se las quita (en caso contrario no le saca ninguna habilidad
+poder :: Gema
+poder = dejarSinEnergia . eliminarHabilidadSiEsMenorA2
+
+dejarSinEnergia :: Personaje->Personaje
+dejarSinEnergia aPersonaje = aPersonaje {energia = 0}
+
+eliminarHabilidadSiEsMenorA2 :: Personaje->Personaje
+eliminarHabilidadSiEsMenorA2 aPersonaje
+    |tieneMasDeNHabilidades 3 aPersonaje  = aPersonaje -- tiene mas 3 habs
+    |otherwise = dejarSinHabilidades aPersonaje -- tiene 2 habs o menos 
+
+dejarSinHabilidades :: Personaje ->Personaje
+dejarSinHabilidades aPersonaje = aPersonaje{habilidades = []} 
+
+{-El tiempo que reduce a la mitad la edad de su oponente pero como no está 
+permitido pelear con menores, no puede dejar la edad del oponente con menos de 18 años. 
+Considerar la mitad entera,  También resta 50 puntos de energía.-}
+tiempo :: Gema
+tiempo = debilitarEnergia 50 .  reducirEdadAMitad  
+
+reducirEdadAMitad ::Personaje->Personaje
+reducirEdadAMitad aPersonaje = aPersonaje{edad = max 18 (div (edad aPersonaje) 2)}
+
+--type Indice = Personaje->Number
+
+{-La gema loca que permite manipular el poder de una gema y la ejecuta 2 veces contra un rival. -}
+gemaLoca :: Gema->Gema
+gemaLoca gema = aplicarDosVecesPoder gema 
+
+aplicarDosVecesPoder :: Gema->Personaje->Personaje
+aplicarDosVecesPoder gema = flip aplicarPoder gema . flip aplicarPoder gema
 
 
-{- 
 
-El espacio que permite transportar al rival al planeta x (el que usted decida) y
- resta 20 puntos de energía.
+{-
+Punto 4: (1 punto) Dar un ejemplo de un guantelete de goma con las gemas tiempo, 
+alma que quita la habilidad de “usar Mjolnir” y la gema loca que manipula el poder del alma 
+tratando de eliminar la “programación en Haskell”.
+-}
+guanteleteDeGoma = UnGuantelete{
+   material = "guanteleteDeGoma"
+    ,gemas = [tiempo , alma "usar Mjolnir" ,gemaLoca (alma "programación en Haskell")]
+}
 
-El poder deja sin energía al rival y si tiene 2 habilidades o menos se las quita
- (en caso contrario no le saca ninguna habilidad).
 
-El tiempo que reduce a la mitad la edad de su oponente pero como no está 
-permitido pelear con menores, no puede dejar la edad del oponente con menos de 18 años. Considerar la mitad entera, por ej: si el oponente tiene 50 años, le quedarán 25. Si tiene 45, le quedarán 22 (por división entera). Si tiene 30 años, le deben quedar 18 en lugar de 15. También resta 50 puntos de energía.
+{-
+Punto 5: (2 puntos). No se puede utilizar recursividad. Generar la función utilizar
+  que dado una lista de gemas y un enemigo ejecuta el poder de cada una de las gemas que
+   lo componen contra el personaje dado. Indicar cómo se produce el “efecto de lado” sobre la víctima.
+-}
 
-La gema loca que permite manipular el poder de una gema y la ejecuta 2
- veces contra un rival.
+
+
+{-
+Punto 6: (2 puntos). Resolver utilizando recursividad. Definir la función gemaMasPoderosa que dado un guantelete y una persona obtiene la gema del infinito que produce la pérdida más grande de energía sobre la víctima. 
+
+
+Punto 7: (1 punto) Dada la función generadora de gemas y un guantelete de locos:
+infinitasGemas :: Gema -> [Gema]
+infinitasGemas gema = gema:(infinitasGemas gema)
+
+guanteleteDeLocos :: Guantelete
+guanteleteDeLocos = Guantelete "vesconite" (infinitasGemas tiempo)
+
+Y la función 
+usoLasTresPrimerasGemas :: Guantelete -> Personaje -> Personaje
+usoLasTresPrimerasGemas guantelete = (utilizar . take 3. gemas) guantelete
+
+
 -}
