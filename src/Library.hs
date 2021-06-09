@@ -33,14 +33,13 @@ data Guantelete = UnGuantelete{
 type Universo = [Personaje]
 
 {-Punto 1: (2 puntos)
-Modelar Personaje, Guantelete y Universo como tipos de dato e implementar el chasquido de un universo.
--}
+Modelar Personaje, Guantelete y Universo como tipos de dato e implementar el chasquido de un universo.-}
 
 chasquidoDeUniverso :: Universo -> Universo
 chasquidoDeUniverso universo = take (nuevoCantPoblacion universo) universo
 
 nuevoCantPoblacion :: Universo->Number
-nuevoCantPoblacion  =  (flip div 2 .length)
+nuevoCantPoblacion  =  flip div 2 .length
 
 -- DECLARANDO PERSONAJES
 
@@ -49,70 +48,61 @@ ironMan = UnPersonaje {
     ,nombre = "tony stark"
     ,habilidades = ["superTrake","rayos laser"]
     ,energia = 26
-    ,planeta = "Tierra"
- } 
+    ,planeta = "Tierra"} 
 
 thor = UnPersonaje {
      edad = 35
     ,nombre = "Thor"
     ,habilidades = ["superTraje","martillo fuerte"]
     ,energia = 55
-    ,planeta = "Asgard"
- } 
+    ,planeta = "Asgard"} 
 
 blackWidow = UnPersonaje {
-     edad = 55
+     edad = 1000
     ,nombre = "blackWidow"
-    ,habilidades = ["superTrake"]
+    ,habilidades = ["electrocuta","salta ", "seduce"]
     ,energia = 3
-    ,planeta = "Tierra"
- } 
-{-Punto 2: (3 puntos) Resolver utilizando únicamente orden superior.
-Saber si un universo es apto para péndex, que ocurre si alguno de los personajes que lo integran 
-tienen menos de 45 años.
-Saber la energía total de un universo que es la sumatoria de todas las energías de sus
- integrantes que tienen más de una habilidad.
--}
-type Criterio = Personaje->Bool
+    ,planeta = "Tierra"} 
 
+{-Punto 2: (3 puntos) Resolver utilizando únicamente orden superior.
+Saber si un universo es apto para péndex, que ocurre si alguno de los personajes que lo integran tienen menos de 45 años.
+Saber la energía total de un universo que es la sumatoria de todas las energías de sus integrantes que tienen más de una habilidad.-}
+type Criterio = Personaje->Bool
 -- a
 esAptoParaPendex :: Universo->Bool
 esAptoParaPendex universo = any esPendex universo -- pasamos esPendex como paramtero (Orden Superior)
 
 esPendex :: Criterio
 esPendex = (< 45).edad 
--- esPendex unPersonaje = (< 45).edad $ unPersonaje  FORMA DE VILLITA
-
+-- esPendex unPersonaje = (< 45).edad $ unPersonaje  FORMA DE VILLITA 
 -- b 
 type Energia = Number
 
 energiaTotal :: Universo->Energia
-energiaTotal = sum.map energia.integrantesHabilidosos 
+energiaTotal = sum . map energia . integrantesHabilidosos 
 
 integrantesHabilidosos :: Universo->Universo
 integrantesHabilidosos = filter (tieneMasDeNHabilidades 1)
 
 tieneMasDeNHabilidades :: Number->Criterio
-tieneMasDeNHabilidades n  =  (> n).(length.habilidades)  
+tieneMasDeNHabilidades n  =  (> n).length.habilidades
+
 --esHabilidoso :: Criterio
 --esHabilidoso = (> 1).length.habilidades
 
---Saber la energía total de un universo que es la sumatoria de todas las 
---energías de sus integrantes que tienen más de una habilidad.
+--Saber la energía total de un universo que es la sumatoria de todas las energías de sus integrantes que tienen más de una habilidad.
 
 {-Segunda parte
 A su vez, aunque el guantelete no se encuentre completo con las 6 gemas, 
 el poseedor puede utilizar el poder del mismo contra un enemigo,
- es decir que puede aplicar el poder de cada gema sobre el enemigo. 
- 
--}
+ es decir que puede aplicar el poder de cada gema sobre el enemigo. -}
 
 type Gema = Personaje->Personaje
 aplicarPoder :: Personaje->Gema->Personaje
 aplicarPoder aPersonaje gema = gema aPersonaje
 
 --La mente que tiene la habilidad de debilitar la energía de un usuario en un valor dado.
-mente ::Number->Gema
+mente :: Number->Gema
 mente n  =  debilitarEnergia n 
 
 debilitarEnergia :: Number->Personaje->Personaje
@@ -129,7 +119,7 @@ controlarAlma habilidad aPersonaje = aPersonaje {habilidades = eliminarHabilidad
 --controlarAlma hab aPersonaje = aPersonaje {habilidades = filter (/= hab) (habilidades aPersonaje)} 
 
 eliminarHabilidad :: String -> Personaje -> [String]
-eliminarHabilidad hab   = filter (/= hab) . habilidades  
+eliminarHabilidad hab  = filter (/= hab) . habilidades  
 
 --El espacio que permite transportar al rival al planeta x (el que usted decida) y resta 20 puntos de energía.
 type Planeta = String
@@ -154,7 +144,7 @@ eliminarHabilidadSiEsMenorA2 aPersonaje
     |otherwise = dejarSinHabilidades aPersonaje -- tiene 2 habs o menos 
 
 dejarSinHabilidades :: Personaje ->Personaje
-dejarSinHabilidades aPersonaje = aPersonaje{habilidades = []} 
+dejarSinHabilidades aPersonaje = aPersonaje {habilidades = []} 
 
 {-El tiempo que reduce a la mitad la edad de su oponente pero como no está 
 permitido pelear con menores, no puede dejar la edad del oponente con menos de 18 años. 
@@ -162,7 +152,7 @@ Considerar la mitad entera,  También resta 50 puntos de energía.-}
 tiempo :: Gema
 tiempo = debilitarEnergia 50 .  reducirEdadAMitad  
 
-reducirEdadAMitad ::Personaje->Personaje
+reducirEdadAMitad :: Personaje->Personaje
 reducirEdadAMitad aPersonaje = aPersonaje{edad = max 18 (div (edad aPersonaje) 2)}
 
 --type Indice = Personaje->Number
@@ -174,19 +164,14 @@ gemaLoca gema = aplicarDosVecesPoder gema
 aplicarDosVecesPoder :: Gema->Personaje->Personaje
 aplicarDosVecesPoder gema = flip aplicarPoder gema . flip aplicarPoder gema
 
-
-
-{-
-Punto 4: (1 punto) Dar un ejemplo de un guantelete de goma con las gemas tiempo, 
+{-Punto 4: (1 punto) Dar un ejemplo de un guantelete de goma con las gemas tiempo, 
 alma que quita la habilidad de “usar Mjolnir” y la gema loca que manipula el poder del alma 
 tratando de eliminar la “programación en Haskell”.
--}
--- Puntp 4 
+-}-- Puntp 4 
 guanteleteDeGoma = UnGuantelete{
     material = "guanteleteDeGoma"
     ,gemas = [tiempo , alma "usar Mjolnir" ,gemaLoca (alma "programación en Haskell")]
 }
-
 
 {- Punto 5: (2 puntos). No se puede utilizar recursividad.
  Generar la función utilizar
@@ -197,39 +182,36 @@ type Enemigo = Personaje
 utilizar :: [Gema]->Enemigo->Enemigo
 utilizar listaGemas enemigo = foldl aplicarPoder enemigo  listaGemas
 
-
-{-
-Punto 6: (2 puntos). Resolver utilizando recursividad. Definir la función gemaMasPoderosa 
+{-Punto 6: (2 puntos). Resolver utilizando recursividad. Definir la función gemaMasPoderosa 
 que dado un guantelete y una persona obtiene la gema del infinito que produce la pérdida más grande de
- energía sobre la víctima. 
--}
-
-
-gemaMasPoderosa :: Guantelete->Personaje->Gema
-gemaMasPoderosa aPersonaje = foldl1 (compararFuentesSegun  guantelete)
-
+ energía sobre la víctima. -}
+gemaMasPoderosa :: Personaje->Guantelete->Gema
+gemaMasPoderosa aPersonaje guantelete = foldl1 (compararSegunEnergia aPersonaje) (gemas guantelete)
 
 --fuenteGanadora :: Ord a=> Persona->(Persona->a)->[Fuente]->Fuente
 --fuenteGanadora aPersonaje criterio  = foldl1 (compararFuentesSegun criterio aPersona)   --aplicacion parcial
 
-
-compararFuentesSegun :: Guantelete->Personaje->Gema
-compararFuentesSegun guantelete aPersonaje aGema bGema 
+compararSegunEnergia :: Personaje->Gema->Gema->Gema
+compararSegunEnergia aPersonaje aGema bGema 
    | energia (aplicarPoder aPersonaje aGema) < energia (aplicarPoder aPersonaje bGema) = aGema
    | otherwise = bGema
 
-{-
-
-Punto 7: (1 punto) Dada la función generadora de gemas y un guantelete de locos:
+{-Punto 7: (1 punto) Dada la función generadora de gemas y un guantelete de locos:
+-}  
 infinitasGemas :: Gema -> [Gema]
 infinitasGemas gema = gema:(infinitasGemas gema)
 
 guanteleteDeLocos :: Guantelete
-guanteleteDeLocos = Guantelete "vesconite" (infinitasGemas tiempo)
+guanteleteDeLocos = UnGuantelete "vesconite" (infinitasGemas tiempo) -- guantelete con infinitasGemas de tiempo
 
-Y la función 
 usoLasTresPrimerasGemas :: Guantelete -> Personaje -> Personaje
 usoLasTresPrimerasGemas guantelete = (utilizar . take 3. gemas) guantelete
 
+{-
+Justifique si se puede ejecutar, relacionándolo con conceptos vistos en la cursada:
+
+gemaMasPoderosa punisher guanteleteDeLocos        -- NO puede JAMAS TERMINA DE EJECUTAR
+
+usoLasTresPrimerasGemas guanteleteDeLocos punisher     SI PUEDE , UTILIZA LAS 3 PRIMERAS
 
 -}
