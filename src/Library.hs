@@ -35,12 +35,23 @@ type Universo = [Personaje]
 {-Punto 1: (2 puntos)
 Modelar Personaje, Guantelete y Universo como tipos de dato e implementar el chasquido de un universo.-}
 
+--COmo lo hciimos con villitas (sin leer enunciado)
+    
 chasquidoDeUniverso :: Universo -> Universo
 chasquidoDeUniverso universo = take (nuevoCantPoblacion universo) universo
+
+--COmo habia q hacerlo
+chasquear :: Guantelete -> Universo -> Universo
+chasquear guantelete universo 
+    | puedeUsarse guantelete = take (nuevoCantPoblacion universo) universo
+    | otherwise = universo 
+
 
 nuevoCantPoblacion :: Universo->Number
 nuevoCantPoblacion  =  flip div 2 .length
 
+puedeUsarse:: Guantelete -> Bool
+puedeUsarse guantelete = ((==6).length.gemas) guantelete && ((=="uru").material) guantelete
 -- DECLARANDO PERSONAJES
 
 ironMan = UnPersonaje {
@@ -70,7 +81,7 @@ Saber la energía total de un universo que es la sumatoria de todas las energía
 type Criterio = Personaje->Bool
 -- a
 esAptoParaPendex :: Universo->Bool
-esAptoParaPendex universo = any esPendex universo -- pasamos esPendex como paramtero (Orden Superior)
+esAptoParaPendex  = any esPendex  -- pasamos esPendex como paramtero (Orden Superior)
 
 esPendex :: Criterio
 esPendex = (< 45).edad 
@@ -92,8 +103,7 @@ tieneMasDeNHabilidades n  =  (> n).length.habilidades
 
 --Saber la energía total de un universo que es la sumatoria de todas las energías de sus integrantes que tienen más de una habilidad.
 
-{-Segunda parte
-A su vez, aunque el guantelete no se encuentre completo con las 6 gemas, 
+{-Segunda parteA su vez, aunque el guantelete no se encuentre completo con las 6 gemas, 
 el poseedor puede utilizar el poder del mismo contra un enemigo,
  es decir que puede aplicar el poder de cada gema sobre el enemigo. -}
 
@@ -121,7 +131,8 @@ controlarAlma habilidad aPersonaje = aPersonaje {habilidades = eliminarHabilidad
 eliminarHabilidad :: String -> Personaje -> [String]
 eliminarHabilidad hab  = filter (/= hab) . habilidades  
 
---El espacio que permite transportar al rival al planeta x (el que usted decida) y resta 20 puntos de energía.
+
+
 type Planeta = String
 
 espacio :: Planeta->Gema
@@ -177,6 +188,7 @@ guanteleteDeGoma = UnGuantelete{
  Generar la función utilizar
   que dado una lista de gemas y un enemigo ejecuta el poder de cada una de las gemas que
    lo componen contra el personaje dado. Indicar cómo se produce el “efecto de lado” sobre la víctima.-}
+
 type Enemigo = Personaje
 
 utilizar :: [Gema]->Enemigo->Enemigo
@@ -185,6 +197,7 @@ utilizar listaGemas enemigo = foldl aplicarPoder enemigo  listaGemas
 {-Punto 6: (2 puntos). Resolver utilizando recursividad. Definir la función gemaMasPoderosa 
 que dado un guantelete y una persona obtiene la gema del infinito que produce la pérdida más grande de
  energía sobre la víctima. -}
+
 gemaMasPoderosa :: Personaje->Guantelete->Gema
 gemaMasPoderosa aPersonaje guantelete = foldl1 (compararSegunEnergia aPersonaje) (gemas guantelete)
 
@@ -195,6 +208,32 @@ compararSegunEnergia :: Personaje->Gema->Gema->Gema
 compararSegunEnergia aPersonaje aGema bGema 
    | energia (aplicarPoder aPersonaje aGema) < energia (aplicarPoder aPersonaje bGema) = aGema
    | otherwise = bGema
+
+--UTilizando recursividadd
+
+--OPCION A :SEGUN rtas
+gemaMasPoderosa2 :: Personaje -> Guantelete -> Gema
+gemaMasPoderosa2 personaje guantelte = gemaMasPoderosaDe personaje $ gemas guantelte
+
+gemaMasPoderosaDe :: Personaje -> [Gema] -> Gema
+gemaMasPoderosaDe _ [gema] = gema
+gemaMasPoderosaDe personaje (gema1:gema2:gemas) 
+    | (energia.gema1) personaje < (energia.gema2) personaje = gemaMasPoderosaDe personaje (gema1:gemas)
+    | otherwise = gemaMasPoderosaDe personaje (gema2:gemas)
+
+-- OPCION B:SEgun RUSo
+
+gemaMasPoderosa3 :: Personaje->Guantelete->Gema
+gemaMasPoderosa3 aPersonaje guantelete = gemaDeMayorPoder aPersonaje  (gemas guantelete)
+
+gemaDeMayorPoder :: Personaje->[Gema]->Gema
+gemaDeMayorPoder _ [gema] = gema
+
+gemaDeMayorPoder aPersonaje (gema1:gema2:gemas) 
+   | (energia.aplicarPoder aPersonaje) gema1  > (energia.aplicarPoder aPersonaje) gema2 = gemaDeMayorPoder aPersonaje (gema2:gemas)
+   | otherwise = gemaDeMayorPoder aPersonaje (gema1:gemas) 
+
+
 
 {-Punto 7: (1 punto) Dada la función generadora de gemas y un guantelete de locos:
 -}  
